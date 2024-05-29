@@ -18,12 +18,10 @@ pub fn combat(
                 .entry_mut(*victim)
                 .unwrap()
                 .get_component_mut::<Health>() {
-                    println!("Health before attack: {}", health.current);
                     health.current -= 1;
                     if health.current < 1 {
                         commands.remove(*victim);
                     }
-                    println!("Health after attack: {}", health.current);
                 }
                 commands.remove(*message);
         });
