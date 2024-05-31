@@ -2,8 +2,12 @@ use crate::prelude::*;
 mod empty;
 mod rooms;
 mod automata;
+mod drunkard;
+mod prefab;
 use automata::CellularAutomataArchitect;
+use drunkard::DrunkardsWalkArchitect;
 use empty::EmptyArchitect;
+use prefab::apply_prefab;
 use rooms::RoomsArchitect;
 const NUM_ROOMS: usize = 20;
 
@@ -21,8 +25,25 @@ pub struct MapBuilder {
 
 impl MapBuilder {
     pub fn new(rng: &mut RandomNumberGenerator) -> Self {
-        let mut architect = CellularAutomataArchitect{};
-        architect.new(rng)
+        let mut architect: Box<dyn MapArchitect> = match rng.range(0, 3) {
+            0 => Box::new(CellularAutomataArchitect {}),
+            1 => Box::new(RoomsArchitect {}),
+            _ => Box::new(DrunkardsWalkArchitect {}),
+        };
+        let mut mb = architect.new(rng);
+        apply_prefab(&mut mb, rng);
+        mb
+    }
+
+    // Meant only for creating a basically empty struct to be mutated later
+    pub fn default() -> Self {
+        Self {
+            map: Map::new(),
+            rooms: Vec::new(),
+            monster_spawns: Vec::new(),
+            player_start: Point::zero(),
+            amulet_start: Point::zero(),
+        }
     }
 
     fn fill(&mut self, tile: TileType) {
